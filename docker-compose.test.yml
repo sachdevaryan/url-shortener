@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  test:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://testuser:testpass@db:5432/testdb
+      BASE_URL: http://localhost
+    depends_on:
+      db:
+        condition: service_healthy
+    command: pytest tests/ -v --tb=short
