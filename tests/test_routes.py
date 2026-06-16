@@ -7,7 +7,7 @@ def test_shorten_url(client):
     assert len(data["short_code"]) <= 8
 
 def test_redirect(client):
-    res = client.post("/shorten", json={"url": "https://github.com"})
+    res = client.post("/shorten", json={"url": "https://github.com/"})
     code = res.json()["short_code"]
     res = client.get(f"/{code}", follow_redirects=False)
     assert res.status_code == 301
