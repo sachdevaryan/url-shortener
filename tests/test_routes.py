@@ -11,7 +11,7 @@ def test_redirect(client):
     code = res.json()["short_code"]
     res = client.get(f"/{code}", follow_redirects=False)
     assert res.status_code == 301
-    assert res.headers["location"] == "https://github.com"
+    assert res.headers["location"] == "https://github.com/"
 
 def test_stats(client):
     res = client.post("/shorten", json={"url": "https://openai.com"})
