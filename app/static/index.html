@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Shortener</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f0f;
+      font-family: 'Segoe UI', sans-serif;
+      color: #f0f0f0;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: #4f46e5; }
+
+    button {
+      width: 100%;
+      margin-top: 14px;
+      padding: 14px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #4338ca; }
+    button:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    .result {
+      margin-top: 24px;
+      padding: 20px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .result.show { display: block; }
+
+    .result-label {
+      font-size: 0.75rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .short-url {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #818cf8;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      margin-top: 12px;
+      padding: 8px 14px;
+      background: #2a2a2a;
+      color: #aaa;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      width: auto;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .copy-btn:hover { background: #333; color: #fff; }
+
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value { font-size: 1.3rem; font-weight: 700; color: #fff; }
+    .stat-label { font-size: 0.7rem; color: #555; margin-top: 2px; }
+
+    .error {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: #1f0f0f;
+      border: 1px solid #3f1f1f;
+      border-radius: 8px;
+      color: #f87171;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .error.show { display: block; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #2a2a2a;
+      margin: 32px 0;
+    }
+
+    .stats-section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>URL Shortener</h1>
+    <p class="subtitle">Paste a long URL and get a short one instantly.</p>
+
+    <label for="urlInput">Long URL</label>
+    <input id="urlInput" type="url" placeholder="https://example.com/very/long/url" />
+    <button id="shortenBtn" onclick="shortenUrl()">Shorten</button>
+
+    <div class="error" id="shortenError"></div>
+
+    <div class="result" id="result">
+      <div class="result-label">Your short URL</div>
+      <div class="short-url" id="shortUrl"></div>
+      <button class="copy-btn" onclick="copyUrl()">Copy</button>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="stats-section">
+      <h2>Check Stats</h2>
+      <label for="codeInput">Short Code</label>
+      <input id="codeInput" type="text" placeholder="e.g. abc12345" />
+      <button onclick="getStats()">Get Stats</button>
+
+      <div class="error" id="statsError"></div>
+
+      <div class="result" id="statsResult">
+        <div class="result-label">Original URL</div>
+        <div class="short-url" id="statsOriginal"></div>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-value" id="statsClicks">0</div>
+            <div class="stat-label">Clicks</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="statsCreated">—</div>
+            <div class="stat-label">Created</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function shortenUrl() {
+      const url = document.getElementById('urlInput').value.trim()
+      const btn = document.getElementById('shortenBtn')
+      const errorEl = document.getElementById('shortenError')
+      const resultEl = document.getElementById('result')
+
+      errorEl.className = 'error'
+      resultEl.className = 'result'
+
+      if (!url) return
+
+      btn.disabled = true
+      btn.textContent = 'Shortening...'
+
+      try {
+        const res = await fetch('/shorten', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          errorEl.textContent = data.detail || 'Something went wrong'
+          errorEl.className = 'error show'
+        } else {
+          document.getElementById('shortUrl').textContent = data.short_url
+          resultEl.className = 'result show'
+          document.getElementById('codeInput').value = data.short_code
+        }
+      } catch (e) {
+        errorEl.textContent = 'Could not reach server'
+        errorEl.className = 'error show'
+      }
+
+      btn.disabled = false
+      btn.textContent = 'Shorten'
+    }
+
+    async function getStats() {
+      const code = document.getElementById('codeInput').value.trim()
+      const errorEl = document.getElementById('statsError')
+      const resultEl = document.getElementById('statsResult')
+
+      errorEl.className = 'error'
+      resultEl.className = 'result'
+
+      if (!code) return
+
+      try {
+        const res = await fetch(`/stats/${code}`)
+        const data = await res.json()
+
+        if (!res.ok) {
+          errorEl.textContent = data.detail || 'Code not found'
+          errorEl.className = 'error show'
+        } else {
+          document.getElementById('statsOriginal').textContent = data.original_url
+          document.getElementById('statsClicks').textContent = data.click_count
+          document.getElementById('statsCreated').textContent =
+            new Date(data.created_at).toLocaleDateString()
+          resultEl.className = 'result show'
+        }
+      } catch (e) {
+        errorEl.textContent = 'Could not reach server'
+        errorEl.className = 'error show'
+      }
+    }
+
+    async function copyUrl() {
+      const url = document.getElementById('shortUrl').textContent
+      await navigator.clipboard.writeText(url)
+      const btn = event.target
+      btn.textContent = 'Copied!'
+      setTimeout(() => btn.textContent = 'Copy', 1500)
+    }
+
+    document.getElementById('urlInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') shortenUrl()
+    })
+  </script>
+</body>
+</html>
